@@ -1,43 +1,238 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Client Onboarding | Innovexa Digital</title>
-<style>
-:root{--n:#101b2b;--g:#78d5a0;--ink:#1c293a;--muted:#718093;--line:#e2e8ee;--bg:#f4f7f9}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,Arial}header{background:linear-gradient(120deg,#101b2b,#20364d);color:white;padding:22px max(20px,calc((100% - 1100px)/2));display:flex;justify-content:space-between;align-items:center}.brand{font-size:20px;font-weight:850}.brand span{color:var(--g)}.tag{font-size:11px;letter-spacing:1.6px;color:#c6d4df;text-transform:uppercase}main{max-width:1100px;margin:34px auto;padding:0 18px 50px;display:grid;grid-template-columns:255px 1fr;gap:22px}aside,.panel{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px #15253a0a}aside{padding:23px;height:max-content;position:sticky;top:18px}.sidehead{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 20px}.step{display:flex;align-items:center;gap:11px;margin:18px 0;color:#8793a2;font-weight:650}.num{width:29px;height:29px;border:1px solid #d8e0e8;border-radius:50%;display:grid;place-items:center;font-size:12px}.step.active{color:var(--n)}.step.active .num{background:var(--n);color:white}.step.done .num{background:#e7f8ee;color:#167345;border-color:#b8e8cb}.note{border-top:1px solid var(--line);padding-top:16px;margin-top:24px;color:var(--muted);font-size:12px}.panel{padding:clamp(22px,4vw,40px)}.eyebrow{font-size:11px;color:#258b56;font-weight:850;letter-spacing:1.5px;text-transform:uppercase}h1{font-size:clamp(26px,3vw,34px);line-height:1.2;color:var(--n);margin:8px 0}.intro{color:var(--muted);margin:0 0 26px}.progress{height:5px;background:#edf1f4;border-radius:8px;margin-bottom:28px;overflow:hidden}.bar{height:100%;background:var(--g);width:25%;transition:.2s}.grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.field{display:flex;flex-direction:column;gap:7px}.full{grid-column:1/-1}label{font-size:13px;font-weight:750}em{color:#d34d4d;font-style:normal}input,select,textarea{font:inherit;padding:11px 12px;border:1px solid #dce3e9;border-radius:9px;width:100%;background:#fff;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:#54b982;box-shadow:0 0 0 3px #78d5a022}textarea{min-height:95px;resize:vertical}.hint{font-size:11px;color:#8a96a4}.checks{display:grid;grid-template-columns:1fr 1fr;gap:9px}.check{display:flex;gap:9px;align-items:center;border:1px solid var(--line);padding:11px;border-radius:9px;font-size:12px}.check input{width:auto;accent-color:#258b56}.actions{display:flex;gap:10px;border-top:1px solid var(--line);padding-top:22px;margin-top:28px}.spacer{flex:1}.btn{border:0;border-radius:9px;padding:11px 18px;font-weight:800;cursor:pointer}.primary{background:var(--n);color:white}.secondary{background:#edf1f4;color:#344255}.review{background:#f7f9fb;border:1px solid var(--line);border-radius:9px;padding:14px;margin:12px 0}.review h3{font-size:13px;margin:0 0 7px}.review p{font-size:12px;color:#596779;margin:4px 0;overflow-wrap:anywhere;white-space:pre-wrap}.signature{border:1px dashed #b9c5d1;border-radius:9px;overflow:hidden;background:#fbfcfd}.signature canvas{width:100%;height:160px;display:block;touch-action:none}.sigfoot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:7px 10px;font-size:11px;color:var(--muted)}.success{display:none;text-align:center;padding:40px 10px}.tick{margin:auto;width:58px;height:58px;border-radius:50%;background:#e5f7ed;color:#167345;display:grid;place-items:center;font-size:28px}footer{text-align:center;color:#8b96a3;font-size:11px;padding:0 15px 25px}@media(max-width:760px){main{grid-template-columns:1fr;margin-top:18px}aside{position:static;padding:15px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.step{margin:0;flex-direction:column;gap:4px;font-size:10px}.note{display:none}}@media(max-width:520px){.grid,.checks{grid-template-columns:1fr}.full{grid-column:auto}header{padding:17px 19px}.tag{font-size:9px}.panel{padding:21px 16px}.actions .btn{flex:1}}@media print{body{background:#fff}body>*:not(#printRoot){display:none!important}#printRoot{display:block!important}#printRoot .print-page{page-break-after:always;break-after:page;padding:18mm 16mm;font:12px/1.55 Arial,sans-serif;color:#1c293a}#printRoot .print-page:last-child{page-break-after:auto;break-after:auto}#printRoot h1{font-size:25px;color:#101b2b;margin:4px 0 8px}#printRoot h2{font-size:16px;color:#101b2b;border-bottom:1px solid #dce3e9;padding-bottom:7px;margin:22px 0 12px}#printRoot .print-brand{font-size:20px;font-weight:800;color:#101b2b}#printRoot .print-brand span{color:#258b56}#printRoot .print-tag{font-size:10px;letter-spacing:1.4px;color:#718093;text-transform:uppercase}#printRoot .print-item{border:1px solid #e2e8ee;border-radius:7px;padding:9px 11px;margin:7px 0;break-inside:avoid}#printRoot .print-label{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#718093}#printRoot .print-value{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}#printRoot .print-signature{max-width:100%;height:100px;object-fit:contain;border:1px solid #e2e8ee;margin-top:8px}#printRoot .print-footer{margin-top:24px;padding-top:10px;border-top:1px solid #e2e8ee;color:#718093;font-size:9px}}#printRoot{display:none}
-</style></head><body>
-<header><div><div class="brand">INNOVEXA<span> DIGITAL</span></div><div class="tag">Build. Automate. Scale.</div></div><div class="tag">Client onboarding</div></header>
-<main><aside><p class="sidehead">Client onboarding</p><div class="steps"><div class="step active"><span class="num">1</span>Contact</div><div class="step"><span class="num">2</span>Business</div><div class="step"><span class="num">3</span>Project</div><div class="step"><span class="num">4</span>Review & sign</div></div><div class="note">Your information helps our team understand your requirements and coordinate the next steps.</div></aside>
-<section class="panel"><div id="formArea"><div class="eyebrow">Let's work together</div><h1>Client onboarding form</h1><p class="intro">Tell us about your business and what you'd like to achieve. This should take around 5–8 minutes.</p><div class="progress"><div class="bar" id="bar"></div></div>
-<form id="f" novalidate>
-<div class="page"><div class="grid">
-<div class="field"><label>Full name <em>*</em></label><input name="Full name" required placeholder="Your full name"></div><div class="field"><label>Job title / designation</label><input name="Designation" placeholder="e.g. Founder"></div>
-<div class="field"><label>Email address <em>*</em></label><input name="Email" type="email" required placeholder="name@company.com"></div><div class="field"><label>Phone number <em>*</em></label><input name="Phone" type="tel" required pattern="[0-9+() .-]{7,20}" placeholder="+91 98765 43210"></div>
-<div class="field full"><label>Preferred contact method</label><select name="Contact method"><option>Email</option><option>Phone</option><option>WhatsApp</option></select></div></div></div>
-<div class="page" hidden><div class="grid">
-<div class="field"><label>Company / business name <em>*</em></label><input name="Company" required></div><div class="field"><label>Industry <em>*</em></label><select name="Industry" required><option value="">Select industry</option><option>Technology / IT</option><option>Retail / E-commerce</option><option>Healthcare</option><option>Education</option><option>Manufacturing</option><option>Real estate</option><option>Professional services</option><option>Food & hospitality</option><option>Other</option></select></div>
-<div class="field"><label>Do you currently have a website? <em>*</em></label><select name="Has website" id="hasWebsite" required><option value="">Select an option</option><option value="Yes">Yes, we have a website</option><option value="No">No, we need a new website</option></select></div><div class="field" id="websiteUrlField" hidden><label>Existing website URL <em>*</em></label><input name="Website" id="websiteUrl" type="url" placeholder="https://example.com"></div><div class="field" id="websiteNeedsField" hidden><label>What would you like your new website to do? <em>*</em></label><textarea name="Website requirements" id="websiteNeeds" placeholder="Describe the pages, features, or outcomes you need from your website."></textarea></div><div class="field"><label>Business location</label><input name="Location" placeholder="City, State, Country"></div>
-<div class="field full"><label>Briefly describe your business</label><textarea name="Business description" placeholder="What does your business do? Who are your customers?"></textarea></div></div></div>
-<div class="page" hidden><div class="field"><label>Services required <em>*</em></label><div class="checks">
-<label class="check"><input type="checkbox" name="services" value="Website design & development">Website design & development</label><label class="check"><input type="checkbox" name="services" value="Digital marketing">Digital marketing</label><label class="check"><input type="checkbox" name="services" value="AI automation">AI automation</label><label class="check"><input type="checkbox" name="services" value="Business process automation">Business process automation</label><label class="check"><input type="checkbox" name="services" value="Consulting & strategy">Consulting & strategy</label><label class="check"><input type="checkbox" name="services" value="Other">Other</label></div></div>
-<div class="grid" style="margin-top:19px"><div class="field full"><label>Project goals and requirements <em>*</em></label><textarea name="Requirements" required placeholder="What would you like us to build, improve, or solve?"></textarea></div>
-<div class="field"><label>Estimated budget</label><select name="Budget"><option value="">Choose estimate</option><option>Below ₹10,000</option><option>₹10,000 – ₹25,000</option><option>₹25,000 – ₹50,000</option><option>₹50,000 – ₹1,00,000</option><option>Above ₹1,00,000</option><option>Need guidance</option></select></div><div class="field"><label>Expected timeline</label><select name="Timeline"><option value="">Choose timeline</option><option>As soon as possible</option><option>Within 2–4 weeks</option><option>Within 1–3 months</option><option>Flexible</option></select></div>
-<div class="field full"><label>Relevant files</label><input type="file" name="files" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx,.zip"><span class="hint">Prototype only: selected files are not uploaded.</span></div><div class="field full"><label>Additional notes</label><textarea name="Notes" placeholder="References, special requirements, or questions (optional)"></textarea></div></div></div>
-<div class="page" hidden><h2 style="font-size:19px;margin:0 0 8px">Review your details</h2><p class="hint">Check your information before signing and submitting.</p><div id="review"></div>
-<div class="field" style="margin-top:18px"><label>Digital signature <em>*</em></label><div class="signature"><canvas id="sig"></canvas><div class="sigfoot"><span>Sign using your finger, stylus, or mouse</span><button type="button" class="btn secondary" id="clear" style="padding:5px 10px">Clear</button></div></div></div>
-<div class="field" style="margin-top:16px"><label class="check" style="align-items:flex-start"><input type="checkbox" name="consent" required><span>I confirm the information is accurate and agree that Innovexa Digital may contact me about this enquiry. <em>*</em></span></label></div><p class="hint">This drawn signature is an acknowledgement in this prototype, not an identity-verified or legally certified e-signature.</p></div>
-<div class="actions"><button class="btn secondary" type="button" id="back" hidden>Back</button><span class="spacer"></span><button class="btn primary" type="button" id="next">Continue</button><button class="btn primary" type="submit" id="submit" hidden>Submit application</button></div></form></div>
-<div class="success" id="success"><div class="tick">✓</div><h1>Thank you for choosing Innovexa.</h1><p class="intro">Your prototype submission is ready to print or save as a PDF.</p><button class="btn primary" id="printPdf">Download / Print complete application PDF</button> <button class="btn secondary" onclick="location.reload()">New application</button><p class="hint" style="margin-top:18px">Your completed application will be formatted as a multi-page document for printing or saving as PDF. This prototype does not transmit submissions.</p></div>
-</section></main><div id="printRoot" aria-hidden="true"></div><footer>© Innovexa Digital · Build. Automate. Scale.</footer>
-<script>
-const f=document.querySelector('#f'),pages=[...document.querySelectorAll('.page')],steps=[...document.querySelectorAll('.step')],bar=document.querySelector('#bar'),canvas=document.querySelector('#sig');let at=0,signed=false,draw=false,ctx;
-function show(n){at=n;pages.forEach((p,i)=>p.hidden=i!==n);steps.forEach((s,i)=>{s.classList.toggle('active',i===n);s.classList.toggle('done',i<n)});bar.style.width=(25*(n+1))+'%';back.hidden=n===0;next.hidden=n===3;submit.hidden=n!==3;if(n===3){reviewData();setTimeout(canvasSetup,30)}}
-function valid(){let ok=true;pages[at].querySelectorAll('[required]').forEach(x=>{if(x.type==='checkbox'){if(!x.checked)ok=false}else if(!x.checkValidity()||!x.value.trim()){x.reportValidity();ok=false}});if(at===2&&!f.querySelectorAll('input[name=services]:checked').length){alert('Select at least one service.');ok=false}return ok}
-next.onclick=()=>{if(valid())show(Math.min(3,at+1))};back.onclick=()=>show(Math.max(0,at-1));
-const hasWebsite=document.querySelector('#hasWebsite'),urlField=document.querySelector('#websiteUrlField'),needsField=document.querySelector('#websiteNeedsField'),urlInput=document.querySelector('#websiteUrl'),needsInput=document.querySelector('#websiteNeeds');function websiteFields(){const yes=hasWebsite.value==='Yes',no=hasWebsite.value==='No';urlField.hidden=!yes;needsField.hidden=!no;urlInput.required=yes;needsInput.required=no;if(!yes)urlInput.value='';if(!no)needsInput.value=''}hasWebsite.addEventListener('change',websiteFields);
-function values(){let o={};new FormData(f).forEach((v,k)=>{if(k==='services')o[k]=(o[k]||[]).concat(v);else if(k!=='files'&&k!=='consent')o[k]=v});o['Selected files']=[...f.elements.files.files].map(x=>x.name).join(', ')||'—';return o}
-function reviewData(){let d=values();review.innerHTML=Object.entries(d).map(([k,v])=>'<div class="review"><h3>'+k+'</h3><p>'+String(Array.isArray(v)?v.join(', '):(v||'—')).replaceAll('<','&lt;')+'</p></div>').join('')}
-function canvasSetup(){let r=canvas.getBoundingClientRect(),ratio=devicePixelRatio||1;canvas.width=r.width*ratio;canvas.height=160*ratio;ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#172235'}
-function pt(e){let r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-canvas.addEventListener('pointerdown',e=>{draw=true;canvas.setPointerCapture(e.pointerId);let p=pt(e);ctx.beginPath();ctx.moveTo(p.x,p.y);signed=true});canvas.addEventListener('pointermove',e=>{if(draw){let p=pt(e);ctx.lineTo(p.x,p.y);ctx.stroke()}});['pointerup','pointercancel','pointerleave'].forEach(t=>canvas.addEventListener(t,()=>draw=false));
-clear.onclick=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);signed=false};
-f.onsubmit=e=>{e.preventDefault();if(!valid())return;if(!signed){alert('Please add your signature.');return}formArea.style.display='none';success.style.display='block'};
-function escapeHtml(v){return String(v??'—').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-function buildPrintDocument(){const d=values();const groups=[['Client contact details',['Full name','Designation','Email','Phone','Contact method']],['Business details',['Company','Industry','Has website','Website','Website requirements','Location','Business description']],['Project requirements',['services','Requirements','Budget','Timeline','Selected files','Notes']]];const sig=canvas.toDataURL('image/png');let html='<section class="print-page"><div class="print-brand">INNOVEXA<span> DIGITAL</span></div><div class="print-tag">Build. Automate. Scale. · Client onboarding</div><h1>Client onboarding application</h1><p>Thank you for considering Innovexa Digital. This document records the details and requirements you submitted to help us understand your business and plan the next steps.</p><p><b>Submission date:</b> '+escapeHtml(new Date().toLocaleDateString('en-IN'))+'</p>';for(const [title,keys] of groups){html+='<h2>'+title+'</h2>';for(const key of keys){let val=d[key];if(Array.isArray(val))val=val.join(', ');if(val===undefined||val==='')val='Not provided';html+='<div class="print-item"><div class="print-label">'+escapeHtml(key)+'</div><div class="print-value">'+escapeHtml(val)+'</div></div>'}}html+='<h2>Client acknowledgement</h2><p>I confirm that the information provided in this application is accurate and that Innovexa Digital may contact me about this enquiry.</p><div class="print-item"><div class="print-label">Captured signature</div><img class="print-signature" src="'+sig+'" alt="Client drawn signature"><div class="print-value">Drawn signature captured through the onboarding form.</div></div><div class="print-footer">INNOVEXA DIGITAL · contact@innovexadigital.in · +91 95660 61075 · Tirukazhukundram, Tamil Nadu 603109</div></section>';html+='<section class="print-page"><div class="print-brand">INNOVEXA<span> DIGITAL</span></div><div class="print-tag">Build. Automate. Scale.</div><h1>Thank you for choosing Innovexa.</h1><p>We appreciate the opportunity to learn about your business and project. Our team will review the information you provided and use it to understand your goals, requirements, and the best next steps.</p><h2>What happens next</h2><div class="print-item"><b>1. Review</b><div class="print-value">We review your requirements and the information in this application.</div></div><div class="print-item"><b>2. Discussion</b><div class="print-value">We contact you using your preferred contact method to clarify details where needed.</div></div><div class="print-item"><b>3. Proposal</b><div class="print-value">We discuss scope, timeline, and a suitable project approach.</div></div><div class="print-footer">INNOVEXA DIGITAL · '+escapeHtml('www.innovexadigital.in')+' · contact@innovexadigital.in · +91 95660 61075</div></section>';const root=document.querySelector('#printRoot');root.innerHTML=html;root.setAttribute('aria-hidden','false');window.print();setTimeout(()=>{root.innerHTML='';root.setAttribute('aria-hidden','true')},1000)}document.querySelector('#printPdf').addEventListener('click',buildPrintDocument);show(0);
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Client Onboarding | Innovexa Digital</title>
+  <meta name="description" content="Start your project with Innovexa Digital — websites, mobile apps, AI automation and digital solutions. Build. Automate. Scale.">
+  <meta name="theme-color" content="#101b2b">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/src/styles/onboarding.css">
+</head>
+<body>
+  <a class="skip" href="#formArea">Skip to form</a>
+  <header class="site-header">
+    <a class="brand" href="https://www.innovexadigital.in" aria-label="Innovexa Digital home">
+      <img src="/favicon.svg" alt="" width="34" height="34">
+      <span><span class="brand-name">INNOVEXA<span> DIGITAL</span></span><span class="tag">Build. Automate. Scale.</span></span>
+    </a>
+    <span class="tag header-label">Client onboarding</span>
+  </header>
+
+  <main class="layout">
+    <aside class="steps-card" aria-label="Progress">
+      <p class="sidehead">Client onboarding</p>
+      <ol class="steps" id="steps">
+        <li class="step active" aria-current="step"><span class="num">1</span><span class="step-label">Contact</span></li>
+        <li class="step"><span class="num">2</span><span class="step-label">Business</span></li>
+        <li class="step"><span class="num">3</span><span class="step-label">Project</span></li>
+        <li class="step"><span class="num">4</span><span class="step-label">Review &amp; sign</span></li>
+      </ol>
+      <div class="note">
+        <p>Your information helps our team understand your requirements and coordinate the next steps.</p>
+        <p class="save-state" id="saveState" aria-live="polite"></p>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <div id="formArea" tabindex="-1">
+        <div class="eyebrow">Let's work together</div>
+        <h1>Client onboarding form</h1>
+        <p class="intro">Tell us about your business and what you'd like to achieve. This takes around 5–8 minutes, and your progress is saved on this device as you go.</p>
+
+        <div id="previous" class="previous" hidden></div>
+
+        <div class="progress" role="progressbar" aria-label="Form progress" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1"><div class="bar" id="bar"></div></div>
+
+        <div class="alert error" id="formError" role="alert" hidden></div>
+
+        <form id="f" novalidate>
+          <!-- Honeypot: hidden from people, tempting for bots. -->
+          <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
+
+          <!-- Step 1 -->
+          <fieldset class="page" data-step="0">
+            <legend class="page-title">Client contact details</legend>
+            <div class="grid">
+              <div class="field">
+                <label for="fullName">Full name <em>*</em></label>
+                <input id="fullName" name="fullName" autocomplete="name" maxlength="120" required placeholder="Your full name">
+              </div>
+              <div class="field">
+                <label for="designation">Job title / designation</label>
+                <input id="designation" name="designation" autocomplete="organization-title" maxlength="120" placeholder="e.g. Founder">
+              </div>
+              <div class="field">
+                <label for="email">Email address <em>*</em></label>
+                <input id="email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required placeholder="name@company.com">
+              </div>
+              <div class="field">
+                <label for="phone">Phone number <em>*</em></label>
+                <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required placeholder="+91 98765 43210">
+              </div>
+              <div class="field full">
+                <span class="label" id="contactLabel">Preferred contact method <em>*</em></span>
+                <div class="segmented" role="radiogroup" aria-labelledby="contactLabel">
+                  <label><input type="radio" name="preferredContact" value="Email" checked><span>Email</span></label>
+                  <label><input type="radio" name="preferredContact" value="Phone"><span>Phone</span></label>
+                  <label><input type="radio" name="preferredContact" value="WhatsApp"><span>WhatsApp</span></label>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Step 2 -->
+          <fieldset class="page" data-step="1" hidden>
+            <legend class="page-title">Business details</legend>
+            <div class="grid">
+              <div class="field">
+                <label for="companyName">Company / business name <em>*</em></label>
+                <input id="companyName" name="companyName" autocomplete="organization" maxlength="160" required>
+              </div>
+              <div class="field">
+                <label for="industry">Industry <em>*</em></label>
+                <select id="industry" name="industry" required><option value="">Select industry</option></select>
+              </div>
+              <div class="field">
+                <label for="location">Business location</label>
+                <input id="location" name="location" autocomplete="address-level2" maxlength="160" placeholder="City, State, Country">
+              </div>
+              <div class="field">
+                <span class="label" id="hasWebsiteLabel">Do you currently have a website? <em>*</em></span>
+                <div class="segmented" role="radiogroup" aria-labelledby="hasWebsiteLabel" id="hasWebsite">
+                  <label><input type="radio" name="hasWebsite" value="Yes"><span>Yes</span></label>
+                  <label><input type="radio" name="hasWebsite" value="No"><span>No</span></label>
+                </div>
+              </div>
+              <div class="field full" id="websiteUrlField" hidden>
+                <label for="websiteUrl">Existing website <em>*</em></label>
+                <input id="websiteUrl" name="websiteUrl" type="url" inputmode="url" autocomplete="url" maxlength="300" placeholder="https://example.com">
+              </div>
+              <div class="field full" id="websiteRequirementsField" hidden>
+                <label for="websiteRequirements">Website requirements <em>*</em></label>
+                <textarea id="websiteRequirements" name="websiteRequirements" maxlength="4000" placeholder="Pages, features or outcomes you need from a new website."></textarea>
+              </div>
+              <div class="field full">
+                <label for="businessDescription">Business description</label>
+                <textarea id="businessDescription" name="businessDescription" maxlength="4000" placeholder="What does your business do? Who are your customers?"></textarea>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Step 3 -->
+          <fieldset class="page" data-step="2" hidden>
+            <legend class="page-title">Project requirements</legend>
+            <div class="field">
+              <span class="label" id="servicesLabel">Required services <em>*</em> <span class="hint inline">Select all that apply</span></span>
+              <div class="checks" id="services" role="group" aria-labelledby="servicesLabel"></div>
+            </div>
+            <div class="grid" style="margin-top:18px">
+              <div class="field full" id="otherServicesField" hidden>
+                <label for="otherServices">Other services <em>*</em></label>
+                <input id="otherServices" name="otherServices" maxlength="300" placeholder="Which other services do you need?">
+              </div>
+              <div class="field full">
+                <label for="projectRequirements">Detailed project requirements <em>*</em></label>
+                <textarea id="projectRequirements" name="projectRequirements" maxlength="8000" required rows="6" placeholder="What would you like us to build, improve or solve? Include goals, key features and any must-haves."></textarea>
+                <span class="hint counter" data-for="projectRequirements"></span>
+              </div>
+              <div class="field">
+                <label for="budgetRange">Budget range</label>
+                <select id="budgetRange" name="budgetRange"><option value="">Choose estimate</option></select>
+              </div>
+              <div class="field">
+                <label for="timeline">Expected timeline</label>
+                <select id="timeline" name="timeline"><option value="">Choose timeline</option></select>
+              </div>
+              <div class="field full">
+                <span class="label" id="filesLabel">File attachments</span>
+                <div class="dropzone" id="dropzone">
+                  <input type="file" id="files" name="files" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx,.zip" aria-labelledby="filesLabel" aria-describedby="filesHint">
+                  <div class="dz-inner">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                    <span><strong>Choose files</strong> or drag them here</span>
+                  </div>
+                </div>
+                <span class="hint" id="filesHint">Up to 5 files, 10 MB each · PDF, PNG, JPG, DOC, DOCX, XLSX, ZIP</span>
+                <ul class="file-list" id="fileList"></ul>
+              </div>
+              <div class="field full">
+                <label for="additionalNotes">Additional notes</label>
+                <textarea id="additionalNotes" name="additionalNotes" maxlength="4000" placeholder="References, special requirements or questions (optional)"></textarea>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Step 4 -->
+          <fieldset class="page" data-step="3" hidden>
+            <legend class="page-title">Review and confirm</legend>
+            <p class="hint">Check your details below. Use <strong>Edit</strong> to change any section.</p>
+            <div id="review" class="review-list"></div>
+
+            <div class="field sign-field">
+              <span class="label" id="sigLabel">Your signature <em>*</em></span>
+              <div class="signature" id="signatureBox">
+                <canvas id="sig" role="img" aria-labelledby="sigLabel" aria-describedby="sigHelp"></canvas>
+                <span class="sig-placeholder" id="sigPlaceholder" aria-hidden="true">Sign here</span>
+                <div class="sigfoot">
+                  <span id="sigHelp">Draw with your finger, stylus or mouse</span>
+                  <span class="sig-actions">
+                    <button type="button" class="btn ghost small" id="sigUndo">Undo</button>
+                    <button type="button" class="btn ghost small" id="sigClear">Clear</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="check ack">
+                <input type="checkbox" name="acknowledged" id="acknowledged" required>
+                <span id="ackText"></span>
+              </label>
+            </div>
+            <p class="hint">Your drawn signature confirms this acknowledgement. It is not an identity-verified or legally certified e-signature.</p>
+          </fieldset>
+
+          <div class="actions">
+            <button class="btn secondary" type="button" id="back" hidden>Back</button>
+            <span class="spacer"></span>
+            <button class="btn secondary" type="button" id="toReview" hidden>Back to review</button>
+            <button class="btn primary" type="button" id="next">Continue</button>
+            <button class="btn primary" type="submit" id="submit" hidden><span class="spinner" aria-hidden="true"></span><span class="btn-label">Submit application</span></button>
+          </div>
+        </form>
+      </div>
+
+      <div class="success" id="success" hidden tabindex="-1">
+        <div class="tick" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        </div>
+        <div class="eyebrow">Application submitted</div>
+        <h1 id="successTitle">Thank you for choosing Innovexa.</h1>
+        <p class="intro" id="successIntro"></p>
+        <dl class="ref-card">
+          <div><dt>Application reference</dt><dd id="successRef"></dd></div>
+          <div><dt>Submitted</dt><dd id="successDate"></dd></div>
+        </dl>
+        <div class="success-actions">
+          <button class="btn primary" type="button" id="downloadPdf"><span class="spinner" aria-hidden="true"></span><span class="btn-label">Download PDF</span></button>
+          <button class="btn secondary" type="button" id="printPdf">Print PDF</button>
+        </div>
+        <p class="alert error" id="pdfError" role="alert" hidden></p>
+        <p class="hint" id="emailNote">A confirmation email with your PDF is on its way. Keep your reference for any follow-up.</p>
+
+        <h2 class="next-title">What happens next</h2>
+        <ol class="timeline">
+          <li><strong>Review</strong><span>Innovexa reviews your requirements.</span></li>
+          <li><strong>Discussion</strong><span>Our team contacts you to clarify details.</span></li>
+          <li><strong>Proposal</strong><span>We agree the scope, timeline and approach.</span></li>
+          <li><strong>Project kickoff</strong><span>Work begins after your approval.</span></li>
+        </ol>
+        <button class="btn ghost" type="button" id="newApplication">Start a new application</button>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">© Innovexa Digital · Build. Automate. Scale. · <a href="https://www.innovexadigital.in">innovexadigital.in</a></footer>
+  <script type="module" src="/src/onboarding/main.ts"></script>
+</body>
+</html>
