@@ -8,7 +8,7 @@ import {
   listApplications, recent, signedUrl, stats, supabase, team, updateApplication,
   type AppRow, type ListQuery, type TeamMember,
 } from './data';
-import { BRAND_HTML, badge, busy, csvCell, errMsg, esc, fmtBytes, fmtDate, orEmpty, saveBlob, toast } from './ui';
+import { BRAND_HTML, LOGO_FULL_LIGHT, badge, busy, csvCell, errMsg, esc, fmtBytes, fmtDate, orEmpty, saveBlob, toast } from './ui';
 
 const app = document.getElementById('app')!;
 let session: Session | null = null;
@@ -20,7 +20,7 @@ let loginNotice = ''; // survives the SIGNED_OUT re-render that follows a denied
 function loginView(message = loginNotice) {
   app.innerHTML = `
   <div class="auth"><div class="auth-card">
-    ${BRAND_HTML('Team dashboard')}
+    ${LOGO_FULL_LIGHT}
     <h1>Sign in</h1>
     <p>For authorised Innovexa Digital team members only.</p>
     ${message ? `<div class="alert error" role="alert">${esc(message)}</div>` : ''}
@@ -62,7 +62,7 @@ function loginView(message = loginNotice) {
 function resetPasswordView() {
   app.innerHTML = `
   <div class="auth"><div class="auth-card">
-    ${BRAND_HTML('Team dashboard')}
+    ${LOGO_FULL_LIGHT}
     <h1>Set a new password</h1><p>Choose a password of at least 10 characters.</p>
     <form id="reset" novalidate>
       <div class="field"><label for="np">New password</label><input id="np" type="password" autocomplete="new-password" minlength="10" required></div>

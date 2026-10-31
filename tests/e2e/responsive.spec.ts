@@ -11,6 +11,8 @@ for (const [name, width, height] of [['phone', 375, 812], ['tablet', 820, 1180],
     await page.screenshot({ path: `screenshots/onboarding-${name}.png`, fullPage: true });
 
     await page.goto('/admin/');
+    await expect(page.locator('.auth-logo')).toBeVisible();
+    await page.screenshot({ path: `screenshots/admin-login-${name}.png` });
     await page.fill('#em', 'admin@innovexadigital.in');
     await page.fill('#pw', 'LocalAdmin#2026');
     await page.click('button[type=submit]');

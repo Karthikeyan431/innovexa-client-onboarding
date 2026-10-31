@@ -3,9 +3,15 @@
 :root {
   --n: #101b2b;
   --n2: #20364d;
-  --g: #78d5a0;
-  --g-dark: #258b56;
-  --g-soft: #e7f8ee;
+  /* Accent: the violet → blue of the Innovexa logo */
+  --accent: #7b5cf7;
+  --accent-ink: #5b3fd9;      /* accent text on white (AA contrast) */
+  --accent-soft: #f1edfe;
+  --accent-tint: #f8f6ff;
+  --accent-line: #cbbffb;
+  --brand-gradient: linear-gradient(90deg, #9520f0, #5480f6);
+  --success: #167345;
+  --success-soft: #e7f8ee;
   --ink: #1c293a;
   --ink-2: #344255;
   --muted: #687789;
@@ -23,7 +29,7 @@
   --radius: 10px;
   --radius-lg: 16px;
   --shadow: 0 8px 28px #15253a0d;
-  --focus: 0 0 0 3px #78d5a055;
+  --focus: 0 0 0 3px #7b5cf740;
   color-scheme: light;
 }
 
@@ -36,7 +42,7 @@ body {
   font: 15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-a { color: var(--g-dark); }
+a { color: var(--accent-ink); }
 h1, h2, h3 { color: var(--n); letter-spacing: -0.01em; }
 button, input, select, textarea { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
@@ -83,7 +89,7 @@ select {
   appearance: none; padding-right: 36px; cursor: pointer;
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23687789' stroke-width='1.8'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E") no-repeat right 13px center;
 }
-input:focus, select:focus, textarea:focus { border-color: #54b982; box-shadow: var(--focus); }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: var(--focus); }
 input::placeholder, textarea::placeholder { color: #9aa6b3; }
 textarea { min-height: 96px; resize: vertical; }
 [aria-invalid="true"] { border-color: var(--danger) !important; }
@@ -95,7 +101,7 @@ textarea { min-height: 96px; resize: vertical; }
 /* Alerts and badges */
 .alert { border-radius: var(--radius); padding: 12px 14px; font-size: 13.5px; margin: 0 0 18px; border: 1px solid; }
 .alert.error { background: var(--danger-soft); border-color: #f2c9c9; color: #8f2626; }
-.alert.success { background: var(--g-soft); border-color: #b8e8cb; color: #155f3a; }
+.alert.success { background: var(--success-soft); border-color: #b8e8cb; color: #155f3a; }
 .alert.info { background: var(--info-soft); border-color: #c9dcf3; color: #1f4b80; }
 .alert.warn { background: var(--warn-soft); border-color: #f1dcaa; color: #6e4a00; }
 

@@ -52,4 +52,7 @@ export function csvCell(v: unknown): string {
 }
 
 export const BRAND_HTML = (sub = 'Admin') =>
-  `<a class="brand" href="#/"><img src="/favicon.svg" alt="" width="32" height="32"><span><span class="brand-name">INNOVEXA<span> DIGITAL</span></span><small>${esc(sub)}</small></span></a>`;
+  `<a class="brand" href="#/"><img src="/brand/logo-mark.png" alt="" width="30" height="34"><span><span class="brand-name">INNOVEXA<span>DIGITAL</span></span><small>${esc(sub)}</small></span></a>`;
+
+/** Full stacked logo for light backgrounds (sign-in screens). */
+export const LOGO_FULL_LIGHT = '<img class="auth-logo" src="/brand/logo-full-light.png" alt="Innovexa Digital" width="116" height="92">';

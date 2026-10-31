@@ -87,13 +87,16 @@ function layout(preheader: string, inner: string): string {
 <span style="display:none!important;opacity:0;color:transparent;max-height:0;overflow:hidden">${esc(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7f9;padding:28px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border:1px solid #e2e8ee;border-radius:14px;overflow:hidden">
-<tr><td style="background:#101b2b;padding:22px 28px">
-<div style="font-size:18px;font-weight:800;letter-spacing:.3px;color:#ffffff">INNOVEXA <span style="color:#78d5a0">DIGITAL</span></div>
-<div style="font-size:10px;letter-spacing:1.6px;color:#c6d4df;text-transform:uppercase;margin-top:3px">${esc(BRAND.tagline)}</div>
+<tr><td style="background:#101b2b;padding:20px 28px;border-bottom:3px solid #6d4af6">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="padding-right:12px;vertical-align:middle"><img src="${esc(env.appBaseUrl)}/brand/logo-mark.png" width="35" height="40" alt="" style="display:block;border:0"></td>
+<td style="vertical-align:middle"><div style="font-size:18px;font-weight:800;letter-spacing:.3px;color:#ffffff">INNOVEXA <span style="color:#a7b0bd;font-weight:500;letter-spacing:2.5px">DIGITAL</span></div>
+<div style="font-size:10px;letter-spacing:1.6px;color:#c6d4df;text-transform:uppercase;margin-top:3px">${esc(BRAND.tagline)}</div></td>
+</tr></table>
 </td></tr>
 <tr><td style="padding:28px">${inner}</td></tr>
 <tr><td style="border-top:1px solid #e2e8ee;padding:18px 28px;font-size:11px;line-height:1.6;color:#718093">
-<strong style="color:#101b2b">Innovexa Digital</strong> · <a href="${BRAND.website}" style="color:#258b56;text-decoration:none">www.innovexadigital.in</a> · ${esc(BRAND.email)} · ${esc(BRAND.phone)}<br>${esc(BRAND.address)}
+<strong style="color:#101b2b">Innovexa Digital</strong> · <a href="${BRAND.website}" style="color:#5b3fd9;text-decoration:none">www.innovexadigital.in</a> · ${esc(BRAND.email)} · ${esc(BRAND.phone)}<br>${esc(BRAND.address)}
 </td></tr></table></td></tr></table></body></html>`;
 }
 
@@ -148,7 +151,7 @@ export function clientConfirmationEmail(a: EmailApplication): Omit<EmailMessage,
         ['Company', a.company_name],
         ['Services', a.services.join(', ')],
       ]) +
-      `<div style="font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#258b56;margin:22px 0 6px">What happens next</div><table role="presentation" cellpadding="0" cellspacing="0">${steps}</table>` +
+      `<div style="font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#5b3fd9;margin:22px 0 6px">What happens next</div><table role="presentation" cellpadding="0" cellspacing="0">${steps}</table>` +
       p(`<br>We'll reach you by ${esc(contactWord(a.preferred_contact))}. If you need to add anything, reply to this email and quote <strong>${esc(a.reference)}</strong>.`),
   );
   const text = [
@@ -216,7 +219,7 @@ export function statusUpdateEmail(a: EmailApplication, status: Status, note?: st
     h1(`Application update: ${label}`) +
       p(`Hello ${esc(a.full_name.split(' ')[0])},`) +
       p(esc(message)) +
-      (note ? `<div style="border-left:3px solid #78d5a0;background:#f7f9fb;padding:12px 14px;margin:0 0 14px;font-size:14px;color:#344255;white-space:pre-wrap">${esc(note)}</div>` : '') +
+      (note ? `<div style="border-left:3px solid #7b5cf7;background:#f7f9fb;padding:12px 14px;margin:0 0 14px;font-size:14px;color:#344255;white-space:pre-wrap">${esc(note)}</div>` : '') +
       rows([
         ['Reference', a.reference],
         ['Company', a.company_name],

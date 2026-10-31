@@ -293,6 +293,6 @@ export const BRAND = {
   phone: '+91 95660 61075',
   address: 'Tirukazhukundram, Tamil Nadu 603109',
   navy: '#101b2b',
-  green: '#78d5a0',
-  greenDark: '#258b56',
+  accent: '#7b5cf7',
+  accentInk: '#5b3fd9',
 };

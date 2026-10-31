@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "fonts": "node scripts/embed-fonts.mjs",
+    "assets": "node scripts/embed-assets.mjs",
     "admin:create": "node --env-file=.env.local scripts/create-admin.mjs"
   },
   "dependencies": {

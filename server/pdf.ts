@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { ACKNOWLEDGEMENT_TEXT, BRAND, type ApplicationInput } from '../src/shared/schema.js';
+import { LOGO_MARK_PNG } from './brand.generated.js';
 import { INTER_BOLD, INTER_REGULAR } from './fonts/fonts.generated.js';
 
 export interface PdfInput {
@@ -21,8 +22,11 @@ const BOTTOM = PAGE_H - 22; // content must stay above the footer
 // Palette
 const NAVY: [number, number, number] = [16, 27, 43];
 const NAVY_2: [number, number, number] = [32, 54, 77];
-const GREEN: [number, number, number] = [120, 213, 160];
-const GREEN_DARK: [number, number, number] = [37, 139, 86];
+// Accents taken from the Innovexa logo's violet → blue gradient.
+const VIOLET: [number, number, number] = [109, 74, 246];
+const VIOLET_LIGHT: [number, number, number] = [160, 146, 255];
+const BLUE: [number, number, number] = [84, 128, 246];
+const DIGITAL_GREY: [number, number, number] = [158, 166, 178];
 const INK: [number, number, number] = [28, 41, 58];
 const MUTED: [number, number, number] = [113, 128, 147];
 const LINE: [number, number, number] = [226, 232, 238];
@@ -47,26 +51,27 @@ export function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
-/** Draws the Innovexa mark: a rounded navy tile with a green ascending chevron. */
-function drawMark(doc: jsPDF, x: number, y: number, size: number, onDark: boolean) {
-  doc.setFillColor(...(onDark ? GREEN : NAVY));
-  doc.roundedRect(x, y, size, size, size * 0.22, size * 0.22, 'F');
-  doc.setDrawColor(...(onDark ? NAVY : GREEN));
-  doc.setLineWidth(size * 0.11);
-  doc.setLineCap('round');
-  doc.setLineJoin('round');
-  const s = size;
-  doc.lines([[s * 0.2, -s * 0.22], [s * 0.14, s * 0.12], [s * 0.2, -s * 0.24]], x + s * 0.23, y + s * 0.66, [1, 1], 'S');
+const MARK_ASPECT = 1098 / 1259; // width / height of the logo mark
+
+/** The Innovexa logo mark (transparent PNG); returns the drawn width. */
+function drawMark(doc: jsPDF, x: number, y: number, height: number): number {
+  const width = height * MARK_ASPECT;
+  doc.addImage(LOGO_MARK_PNG, 'PNG', x, y, width, height, 'innovexa-mark', 'FAST');
+  return width;
 }
 
+/** "INNOVEXA" bold with a letter-spaced, lighter "DIGITAL" — as in the logo. */
 function wordmark(doc: jsPDF, x: number, y: number, size: number, onDark: boolean) {
   doc.setFont('Inter', 'bold');
   doc.setFontSize(size);
   doc.setTextColor(...(onDark ? WHITE : NAVY));
   doc.text('INNOVEXA', x, y);
-  const w = doc.getTextWidth('INNOVEXA ');
-  doc.setTextColor(...(onDark ? GREEN : GREEN_DARK));
+  const w = doc.getTextWidth('INNOVEXA') + size * 0.12;
+  doc.setFont('Inter', 'normal');
+  doc.setTextColor(...DIGITAL_GREY);
+  doc.setCharSpace(size * 0.045);
   doc.text('DIGITAL', x + w, y);
+  doc.setCharSpace(0);
 }
 
 export function buildApplicationPdf(input: PdfInput): Uint8Array {
@@ -93,8 +98,8 @@ export function buildApplicationPdf(input: PdfInput): Uint8Array {
   const lineH = (size: number, factor = 1.45) => (size * factor * 25.4) / 72;
 
   const continuationHeader = () => {
-    drawMark(doc, M, 11, 7, false);
-    wordmark(doc, M + 9.5, 16.2, 10, false);
+    const mw = drawMark(doc, M, 10.4, 7.6);
+    wordmark(doc, M + mw + 2.6, 16.2, 10, false);
     setText(8, 'normal', MUTED);
     doc.text(`Client onboarding application · ${input.reference}`, PAGE_W - M, 16.2, { align: 'right' });
     doc.setDrawColor(...LINE);
@@ -115,18 +120,26 @@ export function buildApplicationPdf(input: PdfInput): Uint8Array {
   doc.rect(0, 0, PAGE_W, 52, 'F');
   doc.setFillColor(...NAVY_2);
   doc.triangle(PAGE_W - 70, 0, PAGE_W, 0, PAGE_W, 52, 'F');
-  drawMark(doc, M, 14, 11, true);
-  wordmark(doc, M + 14.5, 21.6, 15, true);
+  // Logo gradient stripe along the bottom of the band.
+  const slices = 60;
+  for (let i = 0; i < slices; i++) {
+    const t = i / (slices - 1);
+    doc.setFillColor(...(VIOLET.map((c, k) => Math.round(c + (BLUE[k] - c) * t)) as [number, number, number]));
+    doc.rect((PAGE_W / slices) * i, 52, PAGE_W / slices + 0.2, 1.4, 'F');
+  }
+  const mw = drawMark(doc, M, 12.5, 14);
+  const wx = M + mw + 4;
+  wordmark(doc, wx, 20.6, 15, true);
   setText(7.5, 'normal', [198, 212, 223]);
   doc.setCharSpace(0.6);
-  doc.text(BRAND.tagline.toUpperCase(), M + 14.5, 26.2);
+  doc.text(BRAND.tagline.toUpperCase(), wx, 25.6);
   doc.setCharSpace(0);
 
   setText(19, 'bold', [255, 255, 255]);
   doc.text('Client Onboarding Application', M, 41);
   setText(8.5, 'normal', [198, 212, 223]);
   doc.text('Reference', PAGE_W - M, 17, { align: 'right' });
-  setText(11, 'bold', GREEN);
+  setText(11, 'bold', VIOLET_LIGHT);
   doc.text(input.reference, PAGE_W - M, 22.5, { align: 'right' });
   setText(8.5, 'normal', [198, 212, 223]);
   doc.text(`Submitted ${formatIST(input.submittedAt)}`, PAGE_W - M, 41, { align: 'right' });
@@ -169,7 +182,7 @@ export function buildApplicationPdf(input: PdfInput): Uint8Array {
   const section = (title: string) => {
     ensure(22);
     y += 3;
-    doc.setFillColor(...GREEN_DARK);
+    doc.setFillColor(...VIOLET);
     doc.rect(M, y - 4, 1.2, 5.4, 'F');
     setText(12, 'bold', NAVY);
     doc.text(title, M + 4, y);
@@ -268,7 +281,7 @@ export function buildApplicationPdf(input: PdfInput): Uint8Array {
   const ackH = ackLines.length * lineH(9.5) + 5;
   doc.roundedRect(M, y - 2, CONTENT_W, ackH, 2, 2, 'FD');
   // tick
-  doc.setDrawColor(...GREEN_DARK);
+  doc.setDrawColor(...VIOLET);
   doc.setLineWidth(0.7);
   doc.lines([[1.4, 1.5], [3, -3.4]], M + 4, y + 2.4, [1, 1], 'S');
   setText(9.5, 'normal', INK);
