@@ -244,6 +244,44 @@ describe.runIf(process.env.INTEGRATION)('access control', () => {
     expect(pdf.status).toBe(200);
   });
 
+  it('only owners/admins can delete; deletion removes rows, files and orphaned client, and is audited', async () => {
+    const email = `delete-me-${Date.now()}@example.com`;
+    const pdfBytes = Buffer.from('%PDF-1.4\n% to delete\n');
+    const up = await (await post('/api/uploads', { files: [{ name: 'brief.pdf', size: pdfBytes.length }] })).json();
+    const fd = new FormData();
+    fd.append('', new Blob([pdfBytes], { type: 'application/pdf' }), 'brief.pdf');
+    await fetch(up.uploads[0].signedUrl, { method: 'PUT', body: fd });
+    const created = await (await submit({ form: { ...validForm, email }, uploadSession: up.session, attachments: [{ path: up.uploads[0].path, name: 'brief.pdf' }] })).json();
+    const { data: row } = await service.from('applications').select('*').eq('id', created.id).single();
+
+    // members, non-admins and anonymous callers are refused
+    const member = await signIn('member@innovexadigital.in', 'LocalMember#2026');
+    expect((await post('/api/admin/delete', { applicationId: created.id }, { authorization: `Bearer ${member.token}` })).status).toBe(403);
+    expect((await member.client.rpc('delete_application', { p_application_id: created.id })).error?.code).toBe('42501');
+    const outsider = await signIn('outsider@example.com', 'NotAdmin#2026');
+    expect((await post('/api/admin/delete', { applicationId: created.id }, { authorization: `Bearer ${outsider.token}` })).status).toBe(401);
+    expect((await post('/api/admin/delete', { applicationId: created.id })).status).toBe(401);
+    expect((await service.from('applications').select('id').eq('id', created.id)).data).toHaveLength(1);
+
+    const owner = await signIn('admin@innovexadigital.in', 'LocalAdmin#2026');
+    const res = await post('/api/admin/delete', { applicationId: created.id }, { authorization: `Bearer ${owner.token}` });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ deleted: true, filesRemaining: 0 });
+
+    expect((await service.from('applications').select('id').eq('id', created.id)).data).toEqual([]);
+    expect((await service.from('application_attachments').select('id').eq('application_id', created.id)).data).toEqual([]);
+    expect((await service.from('application_status_history').select('id').eq('application_id', created.id)).data).toEqual([]);
+    expect((await service.from('clients').select('id').eq('email', email)).data).toEqual([]);
+    expect((await service.storage.from('signatures').download(row.signature_path)).error).toBeTruthy();
+    expect((await service.storage.from('documents').download(row.pdf_path)).error).toBeTruthy();
+    expect((await service.storage.from('attachments').download(up.uploads[0].path)).error).toBeTruthy();
+    const { data: audit } = await owner.client.from('admin_audit_log').select('*').eq('target', created.reference);
+    expect(audit).toMatchObject([{ action: 'application.deleted', actor_id: owner.userId }]);
+
+    // deleting again is a clean 404
+    expect((await post('/api/admin/delete', { applicationId: created.id }, { authorization: `Bearer ${owner.token}` })).status).toBe(404);
+  });
+
   it('deactivated admins lose access immediately', async () => {
     const { client } = await signIn('member@innovexadigital.in', 'LocalMember#2026');
     expect(((await client.from('applications').select('id')).data ?? []).length).toBeGreaterThan(0);

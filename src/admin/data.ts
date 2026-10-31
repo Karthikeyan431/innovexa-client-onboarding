@@ -183,6 +183,10 @@ export async function changeStatus(body: { applicationId: string; status: Status
   return (await authedFetch('/api/admin/status', body)).json() as Promise<{ application: AppRow; email: string }>;
 }
 
+export async function deleteApplication(applicationId: string) {
+  return (await authedFetch('/api/admin/delete', { applicationId })).json() as Promise<{ deleted: boolean; filesRemaining: number }>;
+}
+
 export async function adminPdf(applicationId: string): Promise<Blob> {
   return (await authedFetch('/api/admin/pdf', { applicationId })).blob();
 }

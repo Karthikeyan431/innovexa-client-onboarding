@@ -56,3 +56,29 @@ export const BRAND_HTML = (sub = 'Admin') =>
 
 /** Full stacked logo for light backgrounds (sign-in screens). */
 export const LOGO_FULL_LIGHT = '<img class="auth-logo" src="/brand/logo-full-light.png" alt="Innovexa Digital" width="116" height="92">';
+
+/**
+ * Accessible confirmation dialog (native <dialog>, never window.confirm).
+ * Resolves true only when the confirm button is pressed.
+ */
+export function confirmDialog(opts: { title: string; body: string; confirmLabel: string; danger?: boolean }): Promise<boolean> {
+  return new Promise((resolve) => {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'dialog';
+    dlg.setAttribute('aria-labelledby', 'dlgTitle');
+    dlg.innerHTML = `<form method="dialog">
+      <h2 id="dlgTitle">${esc(opts.title)}</h2>
+      <div class="dialog-body">${opts.body}</div>
+      <div class="dialog-actions">
+        <button class="btn ghost" value="cancel" type="submit" autofocus>Cancel</button>
+        <button class="btn ${opts.danger ? 'danger' : 'primary'}" value="confirm" type="submit">${esc(opts.confirmLabel)}</button>
+      </div></form>`;
+    document.body.append(dlg);
+    dlg.addEventListener('close', () => {
+      resolve(dlg.returnValue === 'confirm');
+      dlg.remove();
+    });
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close('cancel'); }); // backdrop
+    dlg.showModal();
+  });
+}

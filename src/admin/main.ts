@@ -4,11 +4,11 @@ import {
   isValidPhone, normaliseUrl, type Status,
 } from '../shared/schema';
 import {
-  PAGE_SIZE, addNote, adminPdf, changeStatus, configured, exportApplications, getApplication, isAdmin,
+  PAGE_SIZE, addNote, adminPdf, changeStatus, deleteApplication, configured, exportApplications, getApplication, isAdmin,
   listApplications, recent, signedUrl, stats, supabase, team, updateApplication,
   type AppRow, type ListQuery, type TeamMember,
 } from './data';
-import { BRAND_HTML, LOGO_FULL_LIGHT, badge, busy, csvCell, errMsg, esc, fmtBytes, fmtDate, orEmpty, saveBlob, toast } from './ui';
+import { BRAND_HTML, LOGO_FULL_LIGHT, badge, confirmDialog, busy, csvCell, errMsg, esc, fmtBytes, fmtDate, orEmpty, saveBlob, toast } from './ui';
 
 const app = document.getElementById('app')!;
 let session: Session | null = null;
@@ -125,6 +125,30 @@ function shell(active: 'overview' | 'applications', inner: string) {
 
 let teamList: TeamMember[] = [];
 const memberName = (id: string | null | undefined) => (id ? teamList.find((t) => t.user_id === id)?.full_name ?? 'Former member' : '');
+// UI hint only — the database decides (delete_application checks the role).
+const canDelete = () => ['owner', 'admin'].includes(teamList.find((t) => t.user_id === session?.user.id)?.role ?? '');
+
+const TRASH_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
+
+/** Confirms, deletes, and reports. Returns true when the application was deleted. */
+async function confirmAndDelete(a: { id: string; reference: string; full_name: string; company_name: string }): Promise<boolean> {
+  const ok = await confirmDialog({
+    title: 'Delete this application?',
+    body: `<p><strong>${esc(a.full_name)}</strong> · ${esc(a.company_name)} · ${esc(a.reference)}</p>
+      <p>This permanently deletes the application, signature, attachments, signed PDF, internal notes and status history. It cannot be undone.</p>`,
+    confirmLabel: 'Delete permanently',
+    danger: true,
+  });
+  if (!ok) return false;
+  try {
+    const res = await deleteApplication(a.id);
+    toast(res.filesRemaining ? `Deleted ${a.reference}. ${res.filesRemaining} file(s) could not be removed from storage.` : `Deleted ${a.reference}.`, res.filesRemaining ? 'error' : 'ok');
+    return true;
+  } catch (err) {
+    toast(`Could not delete: ${errMsg(err)}`, 'error');
+    return false;
+  }
+}
 
 // ============================================================== overview
 async function overviewView() {
@@ -192,7 +216,7 @@ function tableHtml(rows: Partial<AppRow>[], q: ListQuery | null) {
     return `<th scope="col" aria-sort="${sort}"><button type="button" data-sort="${key}">${label}</button></th>`;
   };
   return `<div class="table-wrap"><table class="data">
-    <thead><tr>${th('full_name', 'Client')}${th('company_name', 'Company')}${th(null, 'Phone')}${th(null, 'Services')}${th('budget_range', 'Budget')}${th('submitted_at', 'Submitted')}${th('status', 'Status')}${th(null, 'Assigned')}</tr></thead>
+    <thead><tr>${th('full_name', 'Client')}${th('company_name', 'Company')}${th(null, 'Phone')}${th(null, 'Services')}${th('budget_range', 'Budget')}${th('submitted_at', 'Submitted')}${th('status', 'Status')}${th(null, 'Assigned')}${q && canDelete() ? '<th scope="col"><span class="sr-only">Actions</span></th>' : ''}</tr></thead>
     <tbody>${rows.map((r) => `
       <tr tabindex="0" data-id="${esc(r.id)}">
         <td class="primary-cell"><strong>${esc(r.full_name)}</strong><span class="sub">${esc(r.email)}</span><div class="sub">${esc(r.reference)}</div></td>
@@ -203,14 +227,25 @@ function tableHtml(rows: Partial<AppRow>[], q: ListQuery | null) {
         <td class="nowrap" data-label="Submitted">${esc(fmtDate(r.submitted_at!))}</td>
         <td class="status-cell">${badge(r.status!)}</td>
         <td class="hide-sm">${esc(memberName(r.assigned_to) || '—')}</td>
+        ${q && canDelete() ? `<td class="actions-cell"><button type="button" class="icon-btn danger" data-delete="${esc(r.id)}" data-ref="${esc(r.reference)}" data-name="${esc(r.full_name)}" data-company="${esc(r.company_name)}" aria-label="Delete ${esc(r.reference)}" title="Delete">${TRASH_ICON}</button></td>` : ''}
       </tr>`).join('')}</tbody></table></div>`;
 }
 
-function bindRows(root: HTMLElement) {
+function bindRows(root: HTMLElement, onDeleted?: () => void) {
   root.querySelectorAll<HTMLTableRowElement>('tr[data-id]').forEach((tr) => {
     const go = () => { location.hash = `#/applications/${tr.dataset.id}`; };
     tr.addEventListener('click', go);
-    tr.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+    tr.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === tr) go(); });
+  });
+  root.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation(); // don't open the row
+      btn.disabled = true;
+      const d = btn.dataset;
+      const deleted = await confirmAndDelete({ id: d.delete!, reference: d.ref!, full_name: d.name!, company_name: d.company! });
+      btn.disabled = false;
+      if (deleted) onDeleted?.();
+    });
   });
 }
 
@@ -222,11 +257,11 @@ async function listView() {
       <button class="btn ghost" type="button" id="csv"><span class="spinner"></span>Export CSV</button></div>
     <section class="card">
       <form class="toolbar" id="filters" role="search">
-        <div class="field search"><label for="fq">Search</label><input id="fq" name="q" type="search" placeholder="Name, company, email, phone or reference" value="${esc(q.q)}"></div>
+        <div class="field search"><label for="fq">Search</label><input id="fq" name="q" type="search" placeholder="Name, email, company, ref…" value="${esc(q.q)}"></div>
         <div class="field"><label for="fs">Status</label><select id="fs" name="status">${opt('', 'All statuses', q.status)}${STATUSES.filter((s) => s !== 'draft').map((s) => opt(s, STATUS_LABELS[s], q.status)).join('')}</select></div>
         <div class="field"><label for="fv">Service</label><select id="fv" name="service">${opt('', 'All services', q.service)}${SERVICES.map((s) => opt(s, s, q.service)).join('')}</select></div>
         <div class="field"><label for="fa">Assigned to</label><select id="fa" name="assigned">${opt('', 'Anyone', q.assigned)}${opt('unassigned', 'Unassigned', q.assigned)}${teamList.map((t) => opt(t.user_id, t.full_name, q.assigned)).join('')}</select></div>
-        <div class="field"><label for="ff">Submitted between</label><div class="date-range"><input id="ff" name="from" type="date" value="${esc(q.from)}" aria-label="From date"><input name="to" type="date" value="${esc(q.to)}" aria-label="To date"></div></div>
+        <div class="field dates"><label for="ff">Submitted between</label><div class="date-range"><input id="ff" name="from" type="date" value="${esc(q.from)}" aria-label="From date"><input name="to" type="date" value="${esc(q.to)}" aria-label="To date"></div></div>
         <button class="btn ghost" type="button" id="resetFilters">Reset</button>
       </form>
       <div id="results"><div class="card-body">${Array.from({ length: 6 }, () => '<div class="skeleton" style="margin:14px 0"></div>').join('')}</div></div>
@@ -243,7 +278,11 @@ async function listView() {
     t = window.setTimeout(() => writeQuery(readForm()), (e.target as HTMLElement).id === 'fq' ? 350 : 0);
   });
   form.addEventListener('submit', (e) => { e.preventDefault(); writeQuery(readForm()); });
-  main.querySelector('#resetFilters')!.addEventListener('click', () => { location.hash = '#/applications'; });
+  main.querySelector('#resetFilters')!.addEventListener('click', () => {
+    clearTimeout(t); // a pending search update must not re-apply the old filters
+    form.reset();
+    location.hash = '#/applications';
+  });
 
   main.querySelector<HTMLButtonElement>('#csv')!.addEventListener('click', async (e) => {
     const btn = e.currentTarget as HTMLButtonElement;
@@ -284,7 +323,7 @@ async function listView() {
       <span class="btns"><button class="btn ghost small" type="button" data-page="${q.page - 1}" ${q.page <= 1 ? 'disabled' : ''}>Previous</button>
       <span style="align-self:center">Page ${q.page} of ${pages}</span>
       <button class="btn ghost small" type="button" data-page="${q.page + 1}" ${q.page >= pages ? 'disabled' : ''}>Next</button></span></div>`;
-    bindRows(results as HTMLElement);
+    bindRows(results as HTMLElement, () => listView());
     results.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) => b.addEventListener('click', () => {
       const key = b.dataset.sort as ListQuery['sort'];
       writeQuery({ ...q, sort: key, dir: q.sort === key && q.dir === 'desc' ? 'asc' : 'desc', page: 1 });
@@ -330,7 +369,10 @@ async function detailView(id: string) {
     <div class="page-head">
       <div><h1>${esc(a.full_name)}</h1><p>${esc(a.company_name)} · <strong>${esc(a.reference)}</strong> · ${badge(a.status)}</p>
         <p class="small">Submitted ${esc(fmtDate(a.submitted_at, true))} · Last updated ${esc(fmtDate(a.updated_at, true))}</p></div>
-      <button class="btn primary" type="button" id="pdf"><span class="spinner"></span>Download signed PDF</button>
+      <div class="head-actions">
+        ${canDelete() ? `<button class="btn ghost danger-text" type="button" id="del">${TRASH_ICON}Delete</button>` : ''}
+        <button class="btn primary" type="button" id="pdf"><span class="spinner"></span>Download signed PDF</button>
+      </div>
     </div>
     <div class="detail">
       <div class="stack">
@@ -397,6 +439,13 @@ async function detailView(id: string) {
       busy(b, false);
     }
   }));
+
+  main.querySelector<HTMLButtonElement>('#del')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    btn.disabled = true;
+    if (await confirmAndDelete(a)) location.hash = '#/applications';
+    else btn.disabled = false;
+  });
 
   main.querySelector<HTMLButtonElement>('#pdf')!.addEventListener('click', async (e) => {
     const btn = e.currentTarget as HTMLButtonElement;

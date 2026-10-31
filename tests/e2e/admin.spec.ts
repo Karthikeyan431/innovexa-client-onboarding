@@ -120,6 +120,28 @@ test('dashboard, search, filters, sorting, pagination, detail, status, notes and
   const [pdf] = await Promise.all([page.waitForEvent('download'), page.click('#pdf')]);
   expect(pdf.suggestedFilename()).toBe(`Innovexa-Application-${ref}.pdf`);
 
+  // delete from the list: cancel keeps it, confirm removes it
+  await page.goto('/admin/#/applications?q=Pagination%20Client%2000');
+  const victim = page.locator('table.data tbody tr').first();
+  await expect(victim).toContainText('Pagination Client 00');
+  const before = await page.locator('table.data tbody tr').count();
+  await victim.locator('[data-delete]').click();
+  await expect(page.locator('dialog.dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.locator('dialog.dialog')).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/applications\?q=/); // row was not opened
+  await victim.locator('[data-delete]').click();
+  await page.getByRole('button', { name: 'Delete permanently' }).click();
+  await expect(page.locator('.toast').last()).toContainText('Deleted INX-');
+  await expect(page.locator('table.data tbody tr')).toHaveCount(before - 1);
+
+  // delete from the detail page
+  await page.locator('table.data tbody tr').first().click();
+  await page.click('#del');
+  await page.getByRole('button', { name: 'Delete permanently' }).click();
+  await expect(page).toHaveURL(/#\/applications$/);
+  await expect(page.locator('.toast').last()).toContainText('Deleted INX-');
+
   // sign out
   await page.click('#signout');
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
