@@ -10,6 +10,7 @@ import { adminNewSubmissionEmail, clientConfirmationEmail, sendEmail, type Email
 import { env } from './env.js';
 import { matchesExtension, safeFileName } from './files.js';
 import { HttpError, UUID_RE } from './http.js';
+import { markInvitationCompleted } from './invitations.js';
 import { buildApplicationPdf } from './pdf.js';
 import { decodePngDataUrl, inspectSignaturePng } from './png.js';
 import { serviceClient } from './supabase.js';
@@ -173,6 +174,7 @@ export async function submitApplication(body: Record<string, unknown>, meta: { i
       console.error('[submit] PDF generation failed; will retry on download', err);
     }
 
+    await markInvitationCompleted(body.inviteToken, id);
     await notifyNewSubmission(id, pdf, attachments.length);
 
     return {

@@ -195,3 +195,55 @@ export async function isAdmin(): Promise<boolean> {
   const { data, error } = await supabase.rpc('is_admin');
   return !error && data === true;
 }
+
+export interface Invitation {
+  id: string;
+  email: string;
+  full_name: string;
+  company_name: string | null;
+  message: string | null;
+  sent_by: string | null;
+  email_status: 'pending' | 'sent' | 'failed' | 'skipped';
+  email_error: string | null;
+  send_count: number;
+  last_sent_at: string;
+  expires_at: string;
+  application_id: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export async function listInvitations(): Promise<Invitation[]> {
+  const { data, error } = await supabase.from('onboarding_invitations')
+    .select('id, email, full_name, company_name, message, sent_by, email_status, email_error, send_count, last_sent_at, expires_at, application_id, completed_at, created_at')
+    .order('created_at', { ascending: false }).limit(500);
+  if (error) throw error;
+  return (data ?? []) as Invitation[];
+}
+
+export interface InvitationResult { invitation: Invitation; link: string; email: 'sent' | 'failed' | 'skipped' }
+
+export class FieldError extends Error {
+  constructor(message: string, public fieldErrors: Record<string, string>) { super(message); }
+}
+
+export async function sendInvitation(body: { fullName: string; email: string; companyName: string; message: string }): Promise<InvitationResult> {
+  const { data } = await supabase.auth.getSession();
+  const res = await fetch('/api/admin/invitations', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${data.session?.access_token}` },
+    body: JSON.stringify(body),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw j.fieldErrors ? new FieldError(j.error, j.fieldErrors) : new Error(j.error || `Request failed (${res.status})`);
+  return j;
+}
+
+export async function resendInvitation(invitationId: string): Promise<InvitationResult> {
+  return (await authedFetch('/api/admin/invitations/resend', { invitationId })).json();
+}
+
+export async function cancelInvitation(id: string) {
+  const { error } = await supabase.from('onboarding_invitations').delete().eq('id', id);
+  if (error) throw error;
+}

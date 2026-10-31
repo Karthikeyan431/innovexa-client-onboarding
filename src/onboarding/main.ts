@@ -11,7 +11,7 @@ import {
   type FieldErrors,
   type FieldName,
 } from '../shared/schema';
-import { ApiError, downloadPdf, submitApplication, uploadAttachments, type SubmitResponse } from './api';
+import { ApiError, downloadPdf, fetchInvitation, submitApplication, uploadAttachments, type SubmitResponse } from './api';
 import { SignaturePad } from './signature-pad';
 import {
   clearDraft, forgetSubmission, loadDraft, loadSubmissions, newKey, rememberSubmission, saveDraft,
@@ -33,6 +33,8 @@ let step = 0;
 let reviewReturn = false; // editing a section from the review step
 let submitting = false;
 let idempotencyKey = newKey();
+// Personal invitation link (?invite=…) sent from the admin dashboard.
+let inviteToken = new URLSearchParams(location.search).get('invite') ?? '';
 let files: File[] = [];
 let lastSubmission: SavedSubmission | null = null;
 
@@ -345,7 +347,7 @@ function persistSoon() {
 }
 function persist() {
   if (submitting || lastSubmission) return;
-  const ok = saveDraft({ values: values(), step, idempotencyKey, signature: pad.toJSON(), savedAt: Date.now() });
+  const ok = saveDraft({ values: values(), step, idempotencyKey, inviteToken: inviteToken || undefined, signature: pad.toJSON(), savedAt: Date.now() });
   $('#saveState').textContent = ok ? `Progress saved on this device · ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : '';
 }
 
@@ -354,6 +356,7 @@ function restore() {
   if (!d) return;
   setValues(d.values ?? {});
   if (typeof d.idempotencyKey === 'string') idempotencyKey = d.idempotencyKey;
+  if (!inviteToken && typeof d.inviteToken === 'string') inviteToken = d.inviteToken;
   pad.load(d.signature);
   updateCounter();
   const target = Math.min(Math.max(0, Number(d.step) || 0), LAST);
@@ -431,6 +434,7 @@ form.addEventListener('submit', async (e) => {
 
     const res = await submitApplication({
       idempotencyKey,
+      inviteToken: inviteToken || undefined,
       form: values(),
       signature,
       uploadSession,
@@ -568,8 +572,33 @@ $('#previous').addEventListener('click', async (e) => {
   else renderPrevious();
 });
 
+// ---------------------------------------------------------------- invitation link
+async function applyInvitation() {
+  if (!inviteToken) return;
+  const inv = await fetchInvitation(inviteToken);
+  if (!inv) {
+    inviteToken = '';
+    return; // invalid/expired: the form still works as a normal application
+  }
+  // Fill only empty fields, so a saved draft is never overwritten.
+  const fill: Record<string, string> = { fullName: inv.fullName, email: inv.email, companyName: inv.companyName };
+  for (const [name, value] of Object.entries(fill)) {
+    const el = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+    if (el && !el.value && value) el.value = value;
+  }
+  const note = document.createElement('div');
+  note.className = 'alert info';
+  note.id = 'inviteNote';
+  note.textContent = inv.completed
+    ? `Welcome back, ${inv.fullName.split(' ')[0]}. You have already submitted this form — you can submit another application if needed.`
+    : `Welcome, ${inv.fullName.split(' ')[0]}! Innovexa Digital invited you to complete this onboarding form. We've filled in the details we have — please check them.`;
+  formError.before(note);
+  persist();
+}
+
 // ---------------------------------------------------------------- init
 restore();
+applyInvitation();
 syncConditional();
 updateCounter();
 renderPrevious();

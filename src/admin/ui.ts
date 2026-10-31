@@ -40,7 +40,14 @@ export function saveBlob(blob: Blob, name: string) {
 
 /** Error message that is safe and useful to show. */
 export function errMsg(err: unknown): string {
-  if (err && typeof err === 'object' && 'message' in err) return String((err as { message: string }).message);
+  if (err && typeof err === 'object' && 'message' in err) {
+    const { message, code } = err as { message: string; code?: string };
+    // Expired/ended session or missing rights: say so plainly instead of the raw database error.
+    if (code === '42501' || code === 'PGRST301' || /permission denied|JWT|not authori[sz]ed/i.test(message)) {
+      return 'Your session has expired or you do not have permission. Please refresh the page and sign in again.';
+    }
+    return String(message);
+  }
   return 'Something went wrong.';
 }
 

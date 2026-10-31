@@ -10,6 +10,7 @@ export interface Draft {
   values: Record<string, unknown>;
   step: number;
   idempotencyKey: string;
+  inviteToken?: string;
   signature?: unknown;
   savedAt: number;
 }

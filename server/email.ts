@@ -11,7 +11,7 @@ export interface EmailMessage {
   attachments?: { filename: string; content: string /* base64 */ }[];
 }
 
-export type EmailKind = 'admin_new_submission' | 'client_confirmation' | 'client_status_update';
+export type EmailKind = 'admin_new_submission' | 'client_confirmation' | 'client_status_update' | 'client_invitation';
 
 /**
  * Sends through Resend and records the outcome in email_events. Never throws:
@@ -229,4 +229,46 @@ export function statusUpdateEmail(a: EmailApplication, status: Status, note?: st
   );
   const text = [`Application update: ${label}`, '', `Hello ${a.full_name.split(' ')[0]},`, '', message, ...(note ? ['', note] : []), '', `Reference: ${a.reference}`, `Company: ${a.company_name}`, '', `Innovexa Digital · ${BRAND.email}`].join('\n');
   return { to: [a.email], subject: `Update on your application ${a.reference}: ${label}`, html, text };
+}
+
+export interface InvitationEmailInput {
+  fullName: string;
+  email: string;
+  companyName: string;
+  message: string;
+  link: string;
+  senderName: string;
+  expiresAt: Date;
+}
+
+export function invitationEmail(i: InvitationEmailInput): Omit<EmailMessage, 'attachments'> {
+  const first = i.fullName.split(' ')[0];
+  const expires = formatIST(i.expiresAt, false);
+  const steps: [string, string][] = [
+    ['Tell us about your business', 'Contact and business details.'],
+    ['Describe your project', 'Services, goals, budget and timeline. Attach any files that help.'],
+    ['Review and sign', 'Confirm your details and add your signature.'],
+  ];
+  const html = layout(
+    `${i.senderName} from Innovexa Digital invited you to start your project.`,
+    h1(`Hello ${first}, let's get your project started`) +
+      p(`${esc(i.senderName)} from Innovexa Digital has invited you${i.companyName ? ` and <strong>${esc(i.companyName)}</strong>` : ''} to complete our client onboarding form. It takes about 5–8 minutes and helps us understand exactly what you need.`) +
+      (i.message ? `<div style="border-left:3px solid #7b5cf7;background:#f7f9fb;padding:12px 14px;margin:0 0 18px;font-size:14px;line-height:1.6;color:#344255;white-space:pre-wrap">${esc(i.message)}<div style="margin-top:8px;font-size:12px;color:#718093">— ${esc(i.senderName)}</div></div>` : '') +
+      `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 18px">${steps.map(([t, d], n) =>
+        `<tr><td style="padding:5px 0;vertical-align:top;width:30px"><div style="width:22px;height:22px;border-radius:50%;background:#101b2b;color:#fff;font-size:11px;font-weight:700;text-align:center;line-height:22px">${n + 1}</div></td><td style="padding:5px 0;font-size:14px;color:#344255"><strong style="color:#101b2b">${t}</strong> — ${d}</td></tr>`).join('')}</table>` +
+      button(i.link, 'Start onboarding') +
+      p(`<br><span style="font-size:12px;color:#718093">This personal link is valid until ${esc(expires)}. If the button doesn't work, copy this address into your browser:<br><a href="${esc(i.link)}" style="color:#5b3fd9;word-break:break-all">${esc(i.link)}</a></span>`),
+  );
+  const text = [
+    `Hello ${first}, let's get your project started`,
+    '',
+    `${i.senderName} from Innovexa Digital has invited you to complete our client onboarding form (about 5–8 minutes).`,
+    ...(i.message ? ['', i.message, `— ${i.senderName}`] : []),
+    '',
+    `Start onboarding: ${i.link}`,
+    `This personal link is valid until ${expires}.`,
+    '',
+    `Innovexa Digital · ${BRAND.website} · ${BRAND.email} · ${BRAND.phone}`,
+  ].join('\n');
+  return { to: [i.email], subject: `${first}, start your project with Innovexa Digital`, html, text };
 }

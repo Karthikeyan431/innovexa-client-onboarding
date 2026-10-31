@@ -269,6 +269,33 @@ export function validateApplication(
   return { data, errors };
 }
 
+export interface InvitationInput {
+  fullName: string;
+  email: string;
+  companyName: string;
+  message: string;
+}
+
+export const INVITATION_DAYS = 30;
+
+/** Validates the "send onboarding link" form (admin dashboard and API). */
+export function validateInvitation(raw: Partial<Record<keyof InvitationInput, unknown>>): { data: InvitationInput; errors: Partial<Record<keyof InvitationInput, string>> } {
+  const data: InvitationInput = {
+    fullName: cleanText(raw.fullName),
+    email: cleanText(raw.email).toLowerCase(),
+    companyName: cleanText(raw.companyName),
+    message: cleanText(raw.message, true),
+  };
+  const errors: Partial<Record<keyof InvitationInput, string>> = {};
+  if (data.fullName.length < 2) errors.fullName = "Enter the client's name.";
+  else if (data.fullName.length > 120) errors.fullName = 'Keep the name under 120 characters.';
+  if (!data.email) errors.email = "Enter the client's email address.";
+  else if (!isValidEmail(data.email)) errors.email = 'Enter a valid email address.';
+  if (data.companyName.length > 160) errors.companyName = 'Keep the company name under 160 characters.';
+  if (data.message.length > 2000) errors.message = 'Keep the message under 2,000 characters.';
+  return { data, errors };
+}
+
 export function attachmentProblem(name: string, size: number, type: string): string | null {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
   const allowed = ATTACHMENTS.types[ext];

@@ -4,9 +4,9 @@ import {
   isValidPhone, normaliseUrl, type Status,
 } from '../shared/schema';
 import {
-  PAGE_SIZE, addNote, adminPdf, changeStatus, deleteApplication, configured, exportApplications, getApplication, isAdmin,
+  FieldError, PAGE_SIZE, addNote, adminPdf, cancelInvitation, changeStatus, deleteApplication, listInvitations, resendInvitation, sendInvitation, configured, exportApplications, getApplication, isAdmin,
   listApplications, recent, signedUrl, stats, supabase, team, updateApplication,
-  type AppRow, type ListQuery, type TeamMember,
+  type AppRow, type Invitation, type InvitationResult, type ListQuery, type TeamMember,
 } from './data';
 import { BRAND_HTML, LOGO_FULL_LIGHT, badge, confirmDialog, busy, csvCell, errMsg, esc, fmtBytes, fmtDate, orEmpty, saveBlob, toast } from './ui';
 
@@ -90,11 +90,13 @@ function resetPasswordView() {
 
 // ============================================================== shell
 const ICONS = {
+  send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>',
+  mail: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
   home: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
   list: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
 };
 
-function shell(active: 'overview' | 'applications', inner: string) {
+function shell(active: 'overview' | 'applications' | 'invitations', inner: string) {
   const me = session?.user;
   const member = teamList.find((t) => t.user_id === me?.id);
   app.innerHTML = `
@@ -102,9 +104,11 @@ function shell(active: 'overview' | 'applications', inner: string) {
     <div class="topbar">${BRAND_HTML()}<button type="button" id="menu" aria-expanded="false" aria-controls="sidebar">Menu</button></div>
     <aside class="sidebar" id="sidebar">
       ${BRAND_HTML()}
+      <button class="btn send-cta" type="button" id="sendInvite">${ICONS.send}Send onboarding link</button>
       <nav class="nav" aria-label="Main">
         <a href="#/" ${active === 'overview' ? 'aria-current="page"' : ''}>${ICONS.home}Overview</a>
         <a href="#/applications" ${active === 'applications' ? 'aria-current="page"' : ''}>${ICONS.list}Clients</a>
+        <a href="#/invitations" ${active === 'invitations' ? 'aria-current="page"' : ''}>${ICONS.mail}Invitations</a>
       </nav>
       <div class="me"><strong>${esc(member?.full_name ?? me?.email ?? '')}</strong>${esc(member ? `${member.role} · ${member.email}` : '')}
         <button class="btn small" type="button" id="signout">Sign out</button></div>
@@ -112,6 +116,10 @@ function shell(active: 'overview' | 'applications', inner: string) {
     <main class="content" id="main" tabindex="-1">${inner}</main>
   </div>`;
   document.getElementById('signout')!.addEventListener('click', () => supabase.auth.signOut());
+  document.getElementById('sendInvite')!.addEventListener('click', () => {
+    document.getElementById('shell')!.classList.remove('nav-open');
+    openInviteDialog();
+  });
   const menu = document.getElementById('menu')!;
   menu.addEventListener('click', () => {
     const open = document.getElementById('shell')!.classList.toggle('nav-open');
@@ -215,7 +223,7 @@ function tableHtml(rows: Partial<AppRow>[], q: ListQuery | null) {
     const sort = q.sort === key ? (q.dir === 'asc' ? 'ascending' : 'descending') : 'none';
     return `<th scope="col" aria-sort="${sort}"><button type="button" data-sort="${key}">${label}</button></th>`;
   };
-  return `<div class="table-wrap"><table class="data">
+  return `<div class="table-wrap"><table class="data apps-table">
     <thead><tr>${th('full_name', 'Client')}${th('company_name', 'Company')}${th(null, 'Phone')}${th(null, 'Services')}${th('budget_range', 'Budget')}${th('submitted_at', 'Submitted')}${th('status', 'Status')}${th(null, 'Assigned')}${q && canDelete() ? '<th scope="col"><span class="sr-only">Actions</span></th>' : ''}</tr></thead>
     <tbody>${rows.map((r) => `
       <tr tabindex="0" data-id="${esc(r.id)}">
@@ -576,6 +584,186 @@ function renderProfile(main: HTMLElement, a: AppRow, editing: boolean) {
   });
 }
 
+// ============================================================== invitations
+const inviteLinkHtml = (r: InvitationResult) => {
+  const emailLine = r.email === 'sent'
+    ? `<div class="alert success">Email sent to <strong>${esc(r.invitation.email)}</strong>.</div>`
+    : r.email === 'skipped'
+      ? '<div class="alert warn">Email is not configured, so nothing was sent. Share the link below instead.</div>'
+      : `<div class="alert error">The email to <strong>${esc(r.invitation.email)}</strong> could not be sent. Share the link below instead, or try Resend later.</div>`;
+  return `${emailLine}
+    <label class="label" for="inviteLink">Personal onboarding link</label>
+    <div class="copy-row"><input id="inviteLink" readonly value="${esc(r.link)}"><button class="btn secondary" type="button" id="copyLink">Copy link</button></div>
+    <p class="small muted">Valid for 30 days and prefilled for ${esc(r.invitation.full_name)}. You can also share it on WhatsApp.</p>`;
+};
+
+function bindCopy(root: ParentNode) {
+  const btn = root.querySelector<HTMLButtonElement>('#copyLink');
+  const input = root.querySelector<HTMLInputElement>('#inviteLink');
+  btn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(input!.value);
+    } catch {
+      input!.select();
+      document.execCommand('copy');
+    }
+    btn.textContent = 'Copied';
+    setTimeout(() => (btn.textContent = 'Copy link'), 2000);
+  });
+}
+
+function openInviteDialog() {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'dialog dialog-wide';
+  dlg.setAttribute('aria-labelledby', 'invTitle');
+  const formHtml = `<form id="inviteForm" novalidate>
+      <h2 id="invTitle">Send onboarding link</h2>
+      <p class="small muted" style="margin:-4px 0 14px">The client gets a branded email with a personal link to the onboarding form, prefilled with these details.</p>
+      <div class="edit-grid">
+        <div class="field"><label for="iName">Client name <em>*</em></label><input id="iName" name="fullName" maxlength="120" autocomplete="off" required></div>
+        <div class="field"><label for="iEmail">Client email <em>*</em></label><input id="iEmail" name="email" type="email" maxlength="254" autocomplete="off" required></div>
+        <div class="field full"><label for="iCompany">Company</label><input id="iCompany" name="companyName" maxlength="160" autocomplete="off"></div>
+        <div class="field full"><label for="iMsg">Personal message <span class="muted">(optional)</span></label><textarea id="iMsg" name="message" rows="3" maxlength="2000" placeholder="e.g. Great speaking with you today — this form helps us prepare your proposal."></textarea></div>
+      </div>
+      <div class="alert error" id="invErr" hidden></div>
+      <div class="dialog-actions"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn primary" type="submit"><span class="spinner"></span>Send invitation</button></div>
+    </form>`;
+  dlg.innerHTML = formHtml;
+  document.body.append(dlg);
+  dlg.addEventListener('close', () => dlg.remove());
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg || (e.target as HTMLElement).closest('[data-close]')) dlg.close();
+  });
+  const bindForm = () => {
+    const form = dlg.querySelector<HTMLFormElement>('#inviteForm')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      form.querySelectorAll('.field-error').forEach((n) => n.remove());
+      form.querySelectorAll('[aria-invalid]').forEach((n) => n.removeAttribute('aria-invalid'));
+      const fd = new FormData(form);
+      const body = { fullName: String(fd.get('fullName') ?? ''), email: String(fd.get('email') ?? ''), companyName: String(fd.get('companyName') ?? ''), message: String(fd.get('message') ?? '') };
+      const btn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      const err = form.querySelector<HTMLElement>('#invErr')!;
+      err.hidden = true;
+      busy(btn, true);
+      try {
+        const res = await sendInvitation(body);
+        dlg.innerHTML = `<div class="dialog-pad"><h2 id="invTitle">Invitation ready</h2>${inviteLinkHtml(res)}
+          <div class="dialog-actions"><button class="btn ghost" type="button" id="another">Send another</button><button class="btn primary" type="button" data-close>Done</button></div></div>`;
+        bindCopy(dlg);
+        dlg.querySelector('#another')!.addEventListener('click', () => { dlg.innerHTML = formHtml; bindForm(); dlg.querySelector<HTMLInputElement>('#iName')!.focus(); });
+        if (location.hash.startsWith('#/invitations')) invitationsView();
+      } catch (e2) {
+        busy(btn, false);
+        if (e2 instanceof FieldError) {
+          for (const [k, msg] of Object.entries(e2.fieldErrors)) {
+            const input = form.querySelector<HTMLElement>(`[name="${k}"]`);
+            input?.setAttribute('aria-invalid', 'true');
+            const span = document.createElement('span');
+            span.className = 'field-error';
+            span.textContent = msg;
+            input?.closest('.field')?.append(span);
+          }
+        } else {
+          err.textContent = errMsg(e2);
+          err.hidden = false;
+        }
+      }
+    });
+  };
+  bindForm();
+  dlg.showModal();
+}
+
+function invitationState(i: Invitation): { label: string; cls: string } {
+  if (i.completed_at) return { label: 'Completed', cls: 'st-completed' };
+  if (new Date(i.expires_at) < new Date()) return { label: 'Expired', cls: 'st-draft' };
+  if (i.email_status === 'failed') return { label: 'Email failed', cls: 'st-rejected' };
+  if (i.email_status === 'skipped') return { label: 'Not emailed', cls: 'st-under_review' };
+  return { label: 'Awaiting client', cls: 'st-submitted' };
+}
+
+async function invitationsView() {
+  const main = shell('invitations', `
+    <div class="page-head"><div><h1>Invitations</h1><p id="invCount">Onboarding links sent to prospective clients.</p></div>
+      <button class="btn primary" type="button" id="invNew">${ICONS.send}Send onboarding link</button></div>
+    <section class="card" id="invCard"><div class="card-body">${Array.from({ length: 4 }, () => '<div class="skeleton" style="margin:14px 0"></div>').join('')}</div></section>`);
+  main.querySelector('#invNew')!.addEventListener('click', () => openInviteDialog());
+  const card = main.querySelector<HTMLElement>('#invCard')!;
+  let rows: Invitation[];
+  try {
+    rows = await listInvitations();
+  } catch (err) {
+    card.innerHTML = `<div class="card-body"><div class="alert error">Could not load invitations: ${esc(errMsg(err))}</div></div>`;
+    return;
+  }
+  const pending = rows.filter((r) => invitationState(r).label === 'Awaiting client').length;
+  main.querySelector('#invCount')!.textContent = `${rows.length} invitation${rows.length === 1 ? '' : 's'} · ${pending} awaiting the client · ${rows.filter((r) => r.completed_at).length} completed`;
+  if (!rows.length) {
+    card.innerHTML = `<div class="empty-state"><strong>No invitations yet</strong>Send a prospective client a personal link to the onboarding form.<div style="margin-top:14px"><button class="btn primary" type="button" id="invEmpty">${ICONS.send}Send onboarding link</button></div></div>`;
+    card.querySelector('#invEmpty')!.addEventListener('click', () => openInviteDialog());
+    return;
+  }
+  card.innerHTML = `<div class="table-wrap"><table class="data inv-table">
+    <thead><tr><th scope="col">Client</th><th scope="col">Company</th><th scope="col">Sent</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>${rows.map((i) => {
+      const st = invitationState(i);
+      return `<tr data-inv="${esc(i.id)}">
+        <td class="primary-cell"><strong>${esc(i.full_name)}</strong><span class="sub">${esc(i.email)}</span></td>
+        <td>${esc(i.company_name || '—')}</td>
+        <td data-label="Sent"><span class="nowrap">${esc(fmtDate(i.last_sent_at, true))}</span><div class="sub">${esc(memberName(i.sent_by) || 'Team')}${i.send_count > 1 ? ` · sent ${i.send_count}×` : ''}</div></td>
+        <td class="status-cell"><span class="badge ${st.cls}" ${i.email_error && !i.completed_at ? `title="${esc(i.email_error)}"` : ''}>${st.label}</span>
+          ${i.completed_at && i.application_id ? `<div class="sub"><a href="#/applications/${esc(i.application_id)}">View application</a></div>` : ''}
+          ${!i.completed_at ? `<div class="sub">Expires ${esc(fmtDate(i.expires_at))}</div>` : ''}</td>
+        <td class="actions-cell inv-actions">${i.completed_at ? '' : `<button class="btn ghost small" type="button" data-resend="${esc(i.id)}"><span class="spinner"></span>Resend</button>
+          <button type="button" class="icon-btn danger" data-cancel="${esc(i.id)}" aria-label="Cancel invitation for ${esc(i.full_name)}" title="Cancel invitation">${TRASH_ICON}</button>`}</td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+
+  card.querySelectorAll<HTMLButtonElement>('[data-resend]').forEach((b) => b.addEventListener('click', async () => {
+    const inv = rows.find((r) => r.id === b.dataset.resend)!;
+    const ok = await confirmDialog({
+      title: 'Resend onboarding link?',
+      body: `<p>${esc(inv.full_name)} (${esc(inv.email)}) will get a new email with a fresh link. The previous link will stop working, and the new one is valid for 30 days.</p>`,
+      confirmLabel: 'Resend',
+    });
+    if (!ok) return;
+    busy(b, true);
+    try {
+      const res = await resendInvitation(inv.id);
+      const dlg = document.createElement('dialog');
+      dlg.className = 'dialog dialog-wide';
+      dlg.innerHTML = `<div class="dialog-pad"><h2>Invitation resent</h2>${inviteLinkHtml(res)}<div class="dialog-actions"><button class="btn primary" type="button" data-close>Done</button></div></div>`;
+      document.body.append(dlg);
+      dlg.addEventListener('close', () => dlg.remove());
+      dlg.addEventListener('click', (e) => { if (e.target === dlg || (e.target as HTMLElement).closest('[data-close]')) dlg.close(); });
+      bindCopy(dlg);
+      dlg.showModal();
+      invitationsView();
+    } catch (err) {
+      toast(`Could not resend: ${errMsg(err)}`, 'error');
+      busy(b, false);
+    }
+  }));
+  card.querySelectorAll<HTMLButtonElement>('[data-cancel]').forEach((b) => b.addEventListener('click', async () => {
+    const inv = rows.find((r) => r.id === b.dataset.cancel)!;
+    const ok = await confirmDialog({
+      title: 'Cancel this invitation?',
+      body: `<p>The link sent to ${esc(inv.full_name)} (${esc(inv.email)}) will stop working. They can still fill in the public form without it.</p>`,
+      confirmLabel: 'Cancel invitation',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await cancelInvitation(inv.id);
+      toast('Invitation cancelled.');
+      invitationsView();
+    } catch (err) {
+      toast(`Could not cancel: ${errMsg(err)}`, 'error');
+    }
+  }));
+}
+
 // ============================================================== router
 async function route() {
   if (recovering) return resetPasswordView();
@@ -587,6 +775,7 @@ async function route() {
   const m = /^\/applications\/([0-9a-f-]{36})$/.exec(path);
   if (m) return detailView(m[1]);
   if (path.startsWith('/applications')) return listView();
+  if (path.startsWith('/invitations')) return invitationsView();
   return overviewView();
 }
 

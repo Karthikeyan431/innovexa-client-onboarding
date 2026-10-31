@@ -77,3 +77,15 @@ export async function uploadAttachments(files: File[], onProgress: (done: number
 export async function downloadPdf(reference: string, token: string): Promise<Blob> {
   return (await post('/api/applications/pdf', { reference, token })).blob();
 }
+
+export interface InvitationPrefill { fullName: string; email: string; companyName: string; completed: boolean }
+
+/** Details for a personal invitation link, or null if it is invalid/expired. */
+export async function fetchInvitation(token: string): Promise<InvitationPrefill | null> {
+  try {
+    const res = await fetch(`/api/invitations?token=${encodeURIComponent(token)}`, { signal: AbortSignal.timeout(15_000) });
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
