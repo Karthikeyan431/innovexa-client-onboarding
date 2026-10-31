@@ -1,5 +1,5 @@
 import { BRAND, STATUS_LABELS, type Status } from '../src/shared/schema.js';
-import { env } from './env.js';
+import { env, isValidSender } from './env.js';
 import { contactWord, formatIST } from './pdf.js';
 import { serviceClient } from './supabase.js';
 
@@ -28,6 +28,9 @@ export async function sendEmail(kind: EmailKind, applicationId: string | null, m
   } else if (!env.resendApiKey || !env.emailFrom) {
     status = 'skipped';
     error = 'RESEND_API_KEY / EMAIL_FROM not configured';
+  } else if (!isValidSender(env.emailFrom)) {
+    status = 'failed';
+    error = 'EMAIL_FROM is not a valid sender. Use: Innovexa Digital <onboarding@innovexadigital.in> (no quotes)';
   } else {
     try {
       const res = await fetch(env.resendApiUrl, {

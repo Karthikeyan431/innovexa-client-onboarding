@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from 'vite';
@@ -13,12 +14,17 @@ function devApi(): Plugin {
       const url = new URL(req.url ?? '/', 'http://localhost');
       if (!url.pathname.startsWith('/api/')) return next();
       const file = resolve(import.meta.dirname, `.${url.pathname.replace(/\/$/, '')}.ts`);
+      if (!existsSync(file)) {
+        res.statusCode = 404;
+        return res.end('Not found');
+      }
       let mod: Record<string, unknown>;
       try {
         mod = await load(file);
-      } catch {
-        res.statusCode = 404;
-        return res.end('Not found');
+      } catch (err) {
+        console.error(`[dev-api] failed to load ${url.pathname}:`, err);
+        res.statusCode = 500;
+        return res.end('Failed to load API module (see dev server log)');
       }
       const fn = mod[req.method ?? 'GET'] as ((r: Request) => Promise<Response>) | undefined;
       if (!fn) {
