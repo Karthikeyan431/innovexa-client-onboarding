@@ -12,7 +12,7 @@
 | Frontend | Vite + TypeScript (no framework). `index.html` (onboarding) and `admin/index.html` (dashboard) |
 | API | Vercel Functions in `api/` (Node.js, Web `Request`/`Response` handlers) |
 | Database, auth, files | Supabase Postgres with Row Level Security, Supabase Auth (admins only) and three private Storage buckets |
-| PDF | Generated on the server with jsPDF and the embedded Inter font (`server/pdf.ts`) |
+| PDF | Generated on the server with jsPDF with the embedded Inter font and logo (`server/pdf.ts`) |
 | Email | Resend HTTP API (`server/email.ts`) |
 
 ```
@@ -26,8 +26,9 @@ server/                 Server-only logic (validation, storage, PDF, email, PNG 
 src/shared/schema.ts    Form options, limits and validation shared by browser and server
 src/onboarding/         Onboarding form (signature pad, draft storage, API client)
 src/admin/              Admin dashboard (data layer in data.ts, views in main.ts)
+public/brand/           Logo, favicons (generated from brand-src/innovexa-logo-source.png)
 supabase/migrations/    Schema, RLS policies, storage buckets, RPCs
-scripts/                create-admin, cleanup-orphan-uploads, mock-resend (tests), embed-fonts
+scripts/                create-admin, cleanup-orphan-uploads, mock-resend (tests), embed-assets (fonts + logo for the PDF)
 tests/                  unit (vitest), integration (vitest + local stack), e2e (Playwright)
 ```
 
